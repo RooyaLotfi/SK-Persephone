@@ -191,6 +191,7 @@ def get_voronoi_df(centroid_df, factor):
 def write_geodf(gdframe, path, filename):
     """
     gets a geodataframe and stores in in a shapefile in the path directory
+    :param filename: Name of the geopandas dataframe with extension .shp
     :param gdframe: geodataframe to be saved in a shape file
     :param path: path to save the geodataframe
     """
