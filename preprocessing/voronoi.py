@@ -188,13 +188,13 @@ def get_voronoi_df(centroid_df, factor):
     return merged_df
 
 
-def write_geodf(gdframe, path):
+def write_geodf(gdframe, path, filename):
     """
     gets a geodataframe and stores in in a shapefile in the path directory
     :param gdframe: geodataframe to be saved in a shape file
     :param path: path to save the geodataframe
     """
-    save_path = os.path.join(path, "geopa_dframe.shp")
+    save_path = os.path.join(path, filename)
     if os.path.exists(path):
         gdframe.to_file(save_path)
     else:
