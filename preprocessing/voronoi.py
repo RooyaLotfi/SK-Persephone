@@ -194,7 +194,7 @@ def write_geodf(gdframe, path):
     :param gdframe: geodataframe to be saved in a shape file
     :param path: path to save the geodataframe
     """
-    save_path = os.path.join(path, "boundaries.shp")
+    save_path = os.path.join(path, "geopa_dframe.shp")
     if os.path.exists(path):
         gdframe.to_file(save_path)
     else:
