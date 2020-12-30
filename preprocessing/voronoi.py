@@ -34,7 +34,7 @@ def _in_box(coords, bounding_box):
 def _centroid_region(vertices):
     """
     Finding centroid of a polygon. If vertices are: v1=[a,b,c] v2=[a2,b2,c2] v3=[a3,b3,c3]
-    We need centroids to connect voronoi regions to voronoi centroids
+    We need RM_centroids to connect voronoi regions to voronoi RM_centroids
     center is: [(a1+a2+a3)/3,(b1+b2+b3)/3,(c1+c2+c3)/3]
     :param vertices: polygon vertices
     :return: center of the polygon
@@ -85,12 +85,12 @@ def _find_idx_point(vertices, point):
 
 def _join_center2boundary(centroids, vor, cols, is_shapely_bndry):
     """
-    Gets a geodataframe (centroids) and it's corresponding voronoi object (vor) and
-    the name of columns for creating dataframe. Finds which centroid (centroids) belongs
+    Gets a geodataframe (RM_centroids) and it's corresponding voronoi object (vor) and
+    the name of columns for creating dataframe. Finds which centroid (RM_centroids) belongs
     to which voronoi vertices (vor) and makes a column of each centroid and it's
     corresponding region.
     :param centroids: a geodataframe of centroid
-    :param vor: voronoi diagram that is gotten from coordinates in the centroids geodataframe
+    :param vor: voronoi diagram that is gotten from coordinates in the RM_centroids geodataframe
     :param cols: the column names for [voronoi center, voronoi boundary vertices]
     :param is_shapely_bndry: True: convert numpy voronoi boundary to shapely.
     False: keep the boundary as numpy array
@@ -166,16 +166,16 @@ def get_voronoi_df(centroid_df, factor):
      1. extract centroid ("geometry") column
      2. calculates diagram voronoi and gets vor object that has voronoi regions and vertices
      3. defines a new dataframe with 2 columns ('vor_boundary', 'vor_centroid') to match voronoi
-     boundaries to voronoi centroids
+     boundaries to voronoi RM_centroids
      4. the ID's that were lost while making voronoi diagram will be added to the dataframe that
       was created in step 3
      5. now we merge two dataframes by column "id"
-    :param centroid_df: Geodataframe of centroids
+    :param centroid_df: Geodataframe of RM_centroids
     :param factor: bounding factor to create diagram voronoi
     :return: centroid_df with an added column:
-    ['vor_boundary' or vertices of voronoi boundary, 'vor_centroid' or centroids of voronoi diagram]
+    ['vor_boundary' or vertices of voronoi boundary, 'vor_centroid' or RM_centroids of voronoi diagram]
     """
-    # Extract centroids
+    # Extract RM_centroids
     centroids = extract_coords(centroid_df)
     # bounding factor = how we should mirror the points
     vor = voronoi(centroids, factor)
