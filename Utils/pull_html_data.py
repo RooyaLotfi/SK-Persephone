@@ -8,8 +8,11 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup
 
-SATELLITE = {'L30', 'S30'}
-TILE = {'12U', '13U'}
+# Default values for satellite, tile, extension of files to download, and year
+SATELLITE = {'L30'}
+# First three characters of the tiles
+TILE = {'13UBS', '13UBR'}
+# Extension of files to be downloaded
 EXTENSION = {'.hdr', '.hdf'}
 YEAR = {'2019'}
 
@@ -48,7 +51,7 @@ def donwload_link(link, directory):
     cwd = os.getcwd()
     # join the current directory with the user defined directory
     save_directory = os.path.join(cwd, directory)
-
+    print("save directory ", save_directory)
     # creating the directory and downloading
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
@@ -65,13 +68,13 @@ def download_all(archive_url, directory):
     links = get_links(archive_url)
 
     for link in links:
-        if link['href'].endswith('.hdr') or link['href'].endswith('.hdf'):
+        if link['href'][-4:] in EXTENSION:
             donwload_link(archive_url + link['href'], directory)
-        elif link['href'].startswith('12U') or link['href'].startswith('13U'):
+        elif link['href'][0:5] in TILE:
             download_all(archive_url + link['href'], os.path.join(directory, link['href']))
-        elif link['href'].startswith('2019'):
+        elif link['href'][0:4] in YEAR:
             download_all(archive_url + link['href'], os.path.join(directory, link['href']))
-        elif link['href'].startswith('L30') or link['href'].startswith('S30'):
+        elif link['href'][0:3] in SATELLITE:
             download_all(archive_url + link['href'], os.path.join(directory, link['href']))
 
 
