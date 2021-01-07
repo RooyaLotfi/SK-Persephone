@@ -15,8 +15,8 @@ TILE = {'13UBS', '13UBR'}
 # Extension of files to be downloaded
 EXTENSION = {'.hdr', '.hdf'}
 YEAR = {'2019'}
-USER_NAME = 'airm-user'
-PASSWORD = 'bh7S-p0Ml-Wsrt-Ler3'
+USER_NAME = ''
+PASSWORD = ''
 
 
 def get_links(archive_url):
