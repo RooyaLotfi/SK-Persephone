@@ -1,5 +1,5 @@
 """
-Designed to get the HLS data from server: https://192.168.1.12/data-04/hls_tmp/
+Designed to get the HLS data from server
 """
 
 import os
@@ -63,7 +63,7 @@ def donwload_link(link, directory):
     print("%s downloaded!\n" % file_name)
 
 
-def download_all(archive_url, directory):
+def crawl_web(archive_url, directory):
     """
 
     :param archive_url: The home URL
@@ -79,17 +79,17 @@ def download_all(archive_url, directory):
         if link['href'][-4:] in EXTENSION:
             donwload_link(archive_url + link['href'], directory)
         elif link['href'][0:5] in TILE:
-            download_all(archive_url + link['href'], os.path.join(directory, link['href']))
+            crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
         elif link['href'][0:4] in YEAR:
-            download_all(archive_url + link['href'], os.path.join(directory, link['href']))
+            crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
         elif link['href'][0:3] in SATELLITE:
-            download_all(archive_url + link['href'], os.path.join(directory, link['href']))
+            crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
 
 
 def main():
     directory = os.path.join('data', 'hls_tmp')
-    archive_url = "https://192.168.1.12/data-04/hls_tmp/"
-    download_all(archive_url, directory)
+    archive_url = ""
+    crawl_web(archive_url, directory)
 
 
 if __name__ == "__main__":
