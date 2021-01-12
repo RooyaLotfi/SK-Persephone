@@ -298,8 +298,8 @@ def plot_voronoi(centroid, vor):
                ["Voronoi Vertices ", "Voronoi Boundaries", "Centroids"])
     plt.plot()
     plt.suptitle('Diagram Voronoi', fontsize=20, color='dimgray')
-    plt.xlabel("Latitude", fontsize=15, color='lightslategray')
-    plt.ylabel("Longitude", fontsize=15, color='lightslategray')
+    plt.xlabel("Longitude", fontsize=15, color='lightslategray')
+    plt.ylabel("Latitude", fontsize=15, color='lightslategray')
     path = os.path.join("figures")
     save_path = os.path.join("figures", "voronoi.png")
     if os.path.exists(path):
