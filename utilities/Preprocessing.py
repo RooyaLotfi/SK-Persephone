@@ -13,7 +13,7 @@ import timeit
 import rasterio
 import sys
 import shutil
-from FileUtils import FileUtils
+from utilities.FileUtils import FileUtils
 from shapely.geometry import box
 import geopandas as gpd
 from fiona.crs import from_epsg
@@ -622,7 +622,7 @@ class Preprocessing:
 
                     if sat_id_read == sat_id and tile in tiles and year_read == year and days_read == day:
                         path_in = f"{qa_masked_path}/{sat_id}/{year}/{tile}/{file}"
-                        bands_dict[band_no].append(path_in)
+                        bands_dict[str(int(band_no))].append(path_in)
 
         for band in bands_dict:
             if bands_dict[band]:
@@ -771,7 +771,7 @@ class Preprocessing:
         # creates crop mask filter and store the tiff file containing only the requested crop id
 
         # reads AAFC raster file
-        src = rio.open(path_to_aafc_crop_map)
+        src = rasterio.open(path_to_aafc_crop_map)
         src_array = src.read(1)
 
         src_array_filter_list = []
@@ -784,7 +784,7 @@ class Preprocessing:
             src_array[src_array_filter_list[i]] = crop_id_list[i]
 
         # write the masked AAFC raster as a new tiff file
-        with rio.Env():
+        with rasterio.Env():
             # Write an array as a raster band to a new 8-bit file. For
             # the new file's profile, we start with the profile of the source
             profile = src.profile
@@ -792,7 +792,7 @@ class Preprocessing:
             # And then change the band count to 1, set the
             # dtype to uint8, and specify LZW compression.
             profile.update(
-                dtype=rio.uint8,
+                dtype=rasterio.uint8,
                 count=1,
                 compress='lzw')
 
@@ -805,5 +805,5 @@ class Preprocessing:
 
             path_to_masked_aafc += output_name + '.tif'
 
-            with rio.open(path_to_masked_aafc, 'w', **profile) as dst:
-                dst.write(src_array.astype(rio.uint8), 1)
+            with rasterio.open(path_to_masked_aafc, 'w', **profile) as dst:
+                dst.write(src_array.astype(rasterio.uint8), 1)
