@@ -20,7 +20,7 @@ from skimage.transform import \
 
 # from osgeo.utils.gdal_edit import * # For whatever reason it does not exist in the GDAL folder when installed through Conda forge. For now I
 # copied the python script into a separate .py called gdal_edit and will import it as is
-import gdal_edit
+from utilities import gdal_edit
 
 
 def overlap_detection(raster_dir, vector_dir):
