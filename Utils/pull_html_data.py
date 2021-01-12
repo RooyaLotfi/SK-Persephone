@@ -17,6 +17,7 @@ EXTENSION = {'.hdr', '.hdf'}
 YEAR = {'2019'}
 USER_NAME = ''
 PASSWORD = ''
+DAY_INTERVAL = []
 
 
 def get_links(archive_url):
@@ -77,13 +78,26 @@ def crawl_web(archive_url, directory):
 
     for link in links:
         if link['href'][-4:] in EXTENSION:
-            donwload_link(archive_url + link['href'], directory)
+            if DAY_INTERVAL[0] <= check_day(link['href']) <= DAY_INTERVAL[1]:
+                print(check_day(link['href']))
+                donwload_link(archive_url + link['href'], directory)
         elif link['href'][0:5] in TILE:
             crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
         elif link['href'][0:4] in YEAR:
             crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
         elif link['href'][0:3] in SATELLITE:
             crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
+
+
+def check_day(href):
+    """
+    Naming convention is in the following form
+    ['HLS', 'S30', 'T12UWA', '2019001', 'v1', '4', 'hdf_sds_01', 'tif']
+    :param href:
+    :return: The day in the naming convention. In example above it is: 001
+    """
+    file_name = href.split(".")
+    return int(file_name[3][-3:])
 
 
 def main():
