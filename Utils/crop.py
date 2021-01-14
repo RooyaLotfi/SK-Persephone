@@ -10,7 +10,6 @@ import numpy as np
 ID_num = np.arange(1, 622).tolist()
 
 RM_IDs = [322, 261, 292]
-RM_IDs = ID_num
 # Default values for satellite, tile, extension of files to download, and year
 SATELLITE = {'L30', 'S30'}
 YEAR = {'2019'}
@@ -46,7 +45,6 @@ def crop_RM(qa_mask_path, rm_polygons_path, mgrs_rm_polygons_path, crop_type_pat
         mgrs_tiles = mgrs_rm_polygon.loc[mgrs_rm_polygon['id'] == rm_id]['MGRS']
         if mgrs_tiles.empty:
             continue
-        # print("ID: ", rm_id, " is in MGRS tiles: \n", mgrs_tiles.to_list())
         rm_polygon = rm_polygons.loc[rm_polygons['id'] == rm_id]
         for satellite in SATELLITE:
             for year in YEAR:
@@ -56,20 +54,18 @@ def crop_RM(qa_mask_path, rm_polygons_path, mgrs_rm_polygons_path, crop_type_pat
                                             satellite, year, tiles_path)
                 if not os.path.exists(rasters_path):
                     os.makedirs(rasters_path)
-                print("RASTER ", rasters_path)
                 id_path = os.path.join(rasters_path, str(rm_id))
                 if not os.path.exists(id_path):
                     os.makedirs(id_path)
-
-                cropped_crop_type_path = os.path.join(id_path, "crop_mask_" + str(rm_id) + ".tif")
-                print("AAFC ", cropped_crop_type_path)
-                cropped_crop_type = crop(crop_type, rm_polygon)
-                cropped_crop_type.rio.to_raster(cropped_crop_type_path)
+                # Cropping HLS data
                 for root, dirs, image_files in sorted(os.walk(rasters_path)):
                     for image_file in image_files:
-                        if '.tif' in image_file:
+                        if '.tif' in image_file and not ("crop" in image_file):
                             image_path = os.path.join(rasters_path, image_file)
                             raster = rioxarray.open_rasterio(image_path)
                             cropped_raster = crop(raster, rm_polygon)
                             cropped_raster.rio.to_raster(os.path.join(id_path, image_file))
-                            print("CROPPED IMAGE", os.path.join(id_path, image_file))
+                # Cropping the crop type raster
+                cropped_crop_type_path = os.path.join(id_path, "crop_mask_" + str(rm_id) + ".tif")
+                cropped_crop_type = crop(crop_type, rm_polygon)
+                cropped_crop_type.rio.to_raster(cropped_crop_type_path)
