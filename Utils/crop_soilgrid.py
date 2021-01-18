@@ -60,13 +60,12 @@ def crop_RM(qa_mask_path, rm_polygons_path, mgrs_rm_polygons_path, crop_type_pat
             for root, dirs, image_files in sorted(os.walk(rasters_path)):
                 for image_file in image_files:
                     if '.tif' in image_file and not ("crop" in image_file):
-                        #print(image_file)
                         image_path = os.path.join(rasters_path, image_file)
-                        print(image_path)
                         raster = rioxarray.open_rasterio(image_path)
                         cropped_raster = crop(raster, rm_polygon)
                         cropped_raster.rio.to_raster(os.path.join(id_path, image_file))
-                        plot_raster_polygon(cropped_raster, rm_polygon)
+                        print("save done! ", os.path.join(id_path, image_file))
+                        #plot_raster_polygon(cropped_raster, rm_polygon)
             # Cropping the crop type raster
             cropped_crop_type_path = os.path.join(id_path, "crop_mask_" + str(rm_id) + ".tif")
             cropped_crop_type = crop(crop_type, rm_polygon)
