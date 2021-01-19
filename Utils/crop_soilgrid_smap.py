@@ -36,6 +36,14 @@ def plot_raster_polygon(raster, polygon):
 
 
 def crop_RM(qa_mask_path, rm_polygons_path, mgrs_rm_polygons_path, crop_type_path):
+    """
+
+    :param qa_mask_path:
+    :param rm_polygons_path:
+    :param mgrs_rm_polygons_path:
+    :param crop_type_path:
+    :return:
+    """
     rm_polygons = gpd.read_file(rm_polygons_path)
     mgrs_rm_polygon = gpd.read_file(mgrs_rm_polygons_path)
     crop_type = rioxarray.open_rasterio(crop_type_path)
