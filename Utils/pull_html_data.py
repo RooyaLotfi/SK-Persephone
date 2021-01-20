@@ -7,17 +7,18 @@ import requests
 # turn off warnings for the unverified SSL connection
 import urllib3
 from bs4 import BeautifulSoup
+from utilities.FileUtils import FileUtils
 
 # Default values for satellite, tile, extension of files to download, and year
 SATELLITE = {'L30', 'S30'}
 # First three characters of the tiles
 TILE = {'13UBS', '13UBR'}
 # Extension of files to be downloaded
-EXTENSION = {'.hdr', '.hdf'}
+EXTENSION = {'.hdr', '.hdf', '.tif'}
 YEAR = {'2019'}
 USER_NAME = ''
 PASSWORD = ''
-DAY_INTERVAL = []
+DAY_INTERVAL = [30, 35]
 
 
 def get_links(archive_url):
@@ -75,17 +76,20 @@ def crawl_web(archive_url, directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
     links = get_links(archive_url)
+    file_util = FileUtils()
 
     for link in links:
+
         if link['href'][-4:] in EXTENSION:
-            if DAY_INTERVAL[0] <= check_day(link['href']) <= DAY_INTERVAL[1]:
-                print(check_day(link['href']))
+            sat_id, tile, year, day, ext = file_util.parse_tile_file(link['href'])
+            print(sat_id, tile, year, day, ext)
+            if DAY_INTERVAL[0] <= int(day) <= DAY_INTERVAL[1] and year in YEAR and tile in TILE:
+                print(link['href'])
                 donwload_link(archive_url + link['href'], directory)
-        elif link['href'][0:5] in TILE:
-            crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
-        elif link['href'][0:4] in YEAR:
-            crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
-        elif link['href'][0:3] in SATELLITE:
+        elif not any(extension in link['href'] for extension in EXTENSION) and 'data' not in link['href'] and (
+                any(tile in link['href'] for tile in TILE) or any(year in link['href'] for year in YEAR) or any(
+                satellite in link['href'] for satellite in SATELLITE)):
+            print("link before crawling ", os.path.join(directory, link['href']))
             crawl_web(archive_url + link['href'], os.path.join(directory, link['href']))
 
 
@@ -101,7 +105,7 @@ def check_day(href):
 
 
 def main():
-    directory = os.path.join('data', 'hls_tmp')
+    directory = os.path.join('', '')
     archive_url = ""
     crawl_web(archive_url, directory)
 
