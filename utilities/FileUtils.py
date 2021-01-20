@@ -31,6 +31,13 @@ class FileUtils:
             tile = file_name[2]
             band_no = file_name[5]
 
+        elif file_name[0] == 'MCD15A3H':
+            sat_id = file_name[0]
+            year = file_name[1][1:5]
+            day = file_name[1][5:]
+            tile = file_name[2]
+            band_no = file_name[5]
+
         return sat_id, tile, year, day, band_no
 
     def parse_mask_file(self, image):
