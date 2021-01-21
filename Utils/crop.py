@@ -51,10 +51,11 @@ def crop_RM(qa_mask_path, rm_polygons_path, mgrs_rm_polygons_path, crop_type_pat
                 tiles_list = ["T" + tile for tile in mgrs_tiles]
                 tiles_path = '_'.join(tiles_list)
                 rasters_path = os.path.join(qa_mask_path,
-                                            satellite, year, tiles_path)
+                                            satellite, year, tiles_path, 'res_30')
                 if not os.path.exists(rasters_path):
                     os.makedirs(rasters_path)
-                id_path = os.path.join(rasters_path, str(rm_id))
+                id_path = os.path.join(qa_mask_path,
+                                            satellite, year, tiles_path, str(rm_id), "cropped")
                 if not os.path.exists(id_path):
                     os.makedirs(id_path)
                 # Cropping HLS data
@@ -65,6 +66,7 @@ def crop_RM(qa_mask_path, rm_polygons_path, mgrs_rm_polygons_path, crop_type_pat
                             raster = rioxarray.open_rasterio(image_path)
                             cropped_raster = crop(raster, rm_polygon)
                             cropped_raster.rio.to_raster(os.path.join(id_path, image_file))
+                            print("save done!", os.path.join(id_path, image_file))
                 # Cropping the crop type raster
                 cropped_crop_type_path = os.path.join(id_path, "crop_mask_" + str(rm_id) + ".tif")
                 cropped_crop_type = crop(crop_type, rm_polygon)
