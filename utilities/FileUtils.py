@@ -36,7 +36,7 @@ class FileUtils:
             year = file_name[1][1:5]
             day = file_name[1][5:]
             tile = file_name[2]
-            band_no = file_name[5]
+            band_no = file_name[5]+"_"+file_name[6]
 
         return sat_id, tile, year, day, band_no
 
