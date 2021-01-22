@@ -1,5 +1,6 @@
 """
-This module
+This module makes a qc mask based on specific user input. see : MODIS Collection 6 (C6) LAI/FPAR Product User’s Guide
+Table 5: Values of FparLAI_QC (8−bit)
 """
 
 import numpy as np
@@ -75,7 +76,14 @@ def make_LAI_FPAR_QC_mask(qc_array, parameter_name='SCF_QC', value=0):
 
 def filter_non_zero(array):
     """
-    sets all the nonzero values to 0 and all zeros to 1
+    sets all the nonzero values to 0 and all zeros to 1. This function is useful when make_LAI_FPAR_QC_mask is
+    used multiple times and the result are summed up as a mask and some elements of the filter will not be more than
+    1 so this function can set them to 1
+    f1 = make_LAI_FPAR_QC_mask(qc_array, parameter_name='SCF_QC', value=0)
+    f2 = make_LAI_FPAR_QC_mask(qc_array, parameter_name='SCF_QC', value=2)
+    f3 = make_LAI_FPAR_QC_mask(qc_array, parameter_name='CLOUD_STATE', value=0)
+    f = f1 + f2 + f3
+    f = filter_non_zero(f)
     :param array:
     :return:
     """
