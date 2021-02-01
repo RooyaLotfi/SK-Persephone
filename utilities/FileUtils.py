@@ -66,7 +66,7 @@ class FileUtils:
         day = file_name[3]
         band_no = file_name[4]
         crop_type = file_name[5]
-
+        # TODO: Fix your functions to keep crop_type in the its name
         return sat_id, tile, year, day, band_no, crop_type
 
     def parse_vi_file(self, text_file):
