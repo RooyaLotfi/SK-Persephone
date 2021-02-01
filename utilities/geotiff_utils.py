@@ -69,30 +69,56 @@ def overlap_detection(raster_dir, vector_dir):
     return overlap
 
 
-def interpolate(data, kind='linear', start_date=1, end_date=365, as_dict=False):
+def interpolate(data, kind='linear', as_dict=False, fill_missing_data=True):
     """
-    Interpolates the input array, pixel by pixel, across the first dimension that is assumed are the days.
-    Assumes that if the data comes as a numpy array, that it is 1-based as in the Day-of-Year calendar, so the value for the first position in the array (0) is day 1.
-    If the data comes as a dictionary, it uses the same value as that of the key for each day.
-    Limitations: It is only able of interpolating between the first date and the last date of the data available.
+    Interpolates the input array, pixel by pixel, across the first
+    dimension that is assumed are the days. Assumes that if the data comes
+    as a numpy array, that it is 1-based as in the Day-of-Year calendar, so
+    the value for the first position in the array (0) is day 1. If the data
+    comes as a dictionary, it uses the same value as that of the key for
+    each day. If there are values that want to be interpolated with the
+    function but not affect the interpolation, those values should be
+    replaced with np.nan.
+    Limitations: It is only able of interpolating between the first date
+    and the last date of the data available, so it can't be used to predict
+    for values outside of the range of data.
+
     Args:
-        data: 2 or 3-dimensional numpy array, the first dimension being the days, so it should look like days x width x height or days x width
+        data: 2 or 3-dimensional numpy array, the first dimension being the
+            days, so it should look like days x width x height or
+            days x width/height.
+            Optionally, data can be a dictionary where its keys are the
+            days of the data in a Day of Year format, and the values are
+            the numpy array that represents the data for that day.
+            E.g. data = {50:np.array, 250:np.array}
         kind: Optional argument, string indicating the kind of interpolation to perform. Based directly on Scipy's interp1d function's argument:
             (‘linear’, ‘nearest’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’, ‘next’, where ‘zero’, ‘slinear’, ‘quadratic’ and ‘cubic’
             refer to a spline interpolation of zeroth, first, second or third order;‘previous’ and ‘next’ simply return the previous or next
             value of the point) or as an integer specifying the order of the spline interpolator to use.
             Default is ‘linear’.
-        start_date: Start date in the Julian calendar format, as an integer, for the first value of the interpolation. Default is 1
-        end_date: End date in the Julian calendar format, as an integer, for the last value of the interpolation. Default is 365
-        as_dict: Boolean that for returning the resulting numpy array as a dictionary instead, with the keys being the days and the values being the resulting numpy arrays for each day
+        as_dict: Boolean that for returning the resulting numpy array as a
+            dictionary instead, with the keys being the days and the values
+            being the resulting numpy arrays for each day.
+        fill_missing_data: If True, the interpolation function will try to
+            create values for missing data, where there is no info. If
+            false, the function will work more similarly to a smoothing
+            function, without creating data on days where there previously
+            wasn't any information.
     Returns:
-        numpy.ma / dict: 3-dimensional numpy masked array or a dictionary with days for the keys and 2D or 1D arrays for the values, if as_dict is True.
+        numpy.ma / dict: 3-dimensional numpy masked array or a dictionary
+            with days for the keys and 2D or 1D arrays for the values,
+            if as_dict is True.
     """
-    # Check if the data is a dictionary and convert it to a numpy array
 
+    import numpy as np
+    import numpy.ma as ma
+    import scipy.interpolate
+
+    # Check if the data is a dictionary and convert it to a numpy array
     if isinstance(data, dict):
         # Check that all the arrays in the dictionary are of the same size
         data_keys = list(data.keys())
+        data_keys = [int(key) for key in data_keys]
         for i in range(len(data_keys) - 1):
             if data[data_keys[i]].shape != data[data_keys[i + 1]].shape:
                 raise ValueError('interpolate: the shape of the arrays in the dictionary do not match')
@@ -100,13 +126,22 @@ def interpolate(data, kind='linear', start_date=1, end_date=365, as_dict=False):
             -1]].shape)  # Create the shape of the final array (days by width x height or days by width/height)
         data_array = np.ma.array(
             np.full(data_shape, np.nan))  # Create a numpy array filled with np.nan, the size of the data
+        start_date = min(data_keys)
+        end_date = max(data_keys)
         for key in data_keys:
-            data_array[int(key) - 1] = data[key]  # Add the data of the dictionary into the array
+            data_array[int(key) - 1] = data[key]  # Add the data of the dictionary into the array, zero-based
+        data_array = data_array[np.arange(start_date - 1, end_date)]
     elif isinstance(data, np.ndarray):
-        data_array = np.ma.array(
-            data.filled().copy())  # Fill the data if it is a numpy masked array, and copy it to the data_array
+        # Copy the data to the data_array and fill it out with np.nan
+        data_array = np.ma.array(data.copy())
+        ma.set_fill_value(data_array, np.nan)
+        data_array = data_array.filled()
+        start_date = 1
+        end_date = data_array.shape[0]
     else:
-        raise TypeError('interpolate: data needs to be of type dict or numpy array, received: ' + str(type(data)))
+        raise TypeError('interpolate: data needs to be of type dict or numpy array, received: {}'.format(type(data)))
+
+    day_range = np.arange(end_date + 1 - start_date)
 
     data_array = ma.masked_invalid(data_array)  # Mask invalid data
     ma.set_fill_value(data_array, np.nan)
@@ -116,18 +151,27 @@ def interpolate(data, kind='linear', start_date=1, end_date=365, as_dict=False):
 
     for index in indices:
         interpol_data = moved_data[index].filled().copy()  # Slice the data as a filled copy
-        if not all(np.isnan(interpol_data)):  # Check if all the values of the interpolation_data are nan
-            day_range = np.arange(start_date, end_date + 1)
-            day_range = day_range[~np.isnan(interpol_data)]
+        if interpol_data[~np.isnan(interpol_data)].shape[
+            0] > 1:  # Check if all the values of the interpolation_data are nan
+            days_available = day_range[~np.isnan(interpol_data)]
+            # print("day range is ", day_range)
+            # print("************* days to interpolate", days_available)
             interpolation_y = interpol_data[~np.isnan(interpol_data)]
-
-            y_interp = scipy.interpolate.interp1d(day_range, interpolation_y,
+            y_interp = scipy.interpolate.interp1d(days_available, interpolation_y,
                                                   kind=kind)  # Create the interpolation function
 
-            interpol_dates = np.arange(min(day_range),
-                                       max(day_range) + 1)  # Get the maximum and minimum interpolation dates possible
+            if fill_missing_data:
+                interpol_dates = np.arange(min(days_available), max(
+                    days_available) + 1)  # Get the maximum and minimum interpolation dates possible from the available days of data
+
+                # print("interpols_data", interpol_dates)
+            else:
+                interpol_dates = days_available
+                # print("interpols_data", day_range[np.isnan(interpol_data)])
             interpols = y_interp(interpol_dates)  # Get the interpolations
-            interpol_data[interpol_dates - 1] = interpols  # Store the interpolations
+            interpol_data[interpol_dates] = interpols  # Store the interpolations
+        else:
+            print('doesnt enter')
 
         interpolated_data[index] = interpol_data  # Save the resulting data
     interpolated_data = np.moveaxis(interpolated_data, -1, 0)  # Reinsert the days axis at the beginning of the list
@@ -136,9 +180,8 @@ def interpolate(data, kind='linear', start_date=1, end_date=365, as_dict=False):
 
     if as_dict:
         interpolated_data_dict = {}
-        # TODO (Juan): The following part is using day_range, which is the last value found inside of the indices and not the general available data for the functiom
-        for i in range(min(day_range), max(day_range) + 1):
-            interpolated_data_dict[i] = interpolated_data[i - 1]  # Pass the data into a dictionary
+        for i in range(start_date, end_date + 1):
+            interpolated_data_dict[i] = interpolated_data[i - start_date]  # Pass the data into a dictionary
         interpolated_data = interpolated_data_dict  # Replace the numpy array for the dictionary
     return interpolated_data
 
@@ -492,13 +535,15 @@ if __name__ == '__main__':
         interpolate_test_array[day - 1] = dat
         if day % 2 == 0:
             interpolate_test_dict[day] = dat
-
     # Remove the values from the first day and last days, as the test data doesn't have them and the interpolation function wouldn't calculate them
     interpolate_test_array[0] = np.full((100, 100), np.nan)
     interpolate_test_array[364] = np.full((100, 100), np.nan)
+    print(interpolate_test_array[0])
     interpolate_test_array = ma.masked_invalid(interpolate_test_array)  # Mask all the invalid data (i.e. np.nan)
+    print(interpolate_test_array[0])
     ma.set_fill_value(interpolate_test_array, np.nan)  # Set the fill value for the masked array
-
+    print("*************")
+    print(interpolate_test_array[0])
     data = interpolate(interpolate_test_dict, kind='linear')  # interpolate the data linearly
 
     # Compare the results
