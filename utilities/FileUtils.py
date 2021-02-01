@@ -36,7 +36,7 @@ class FileUtils:
             year = file_name[1][1:5]
             day = file_name[1][5:]
             tile = file_name[2]
-            band_no = file_name[5]+"_"+file_name[6]
+            band_no = file_name[5] + "_" + file_name[6]
 
         return sat_id, tile, year, day, band_no
 
@@ -136,3 +136,23 @@ class FileUtils:
         day = file_name[2]
 
         return year, day
+
+    def parse_smap_file(self, data_file):
+        file_name = data_file.replace('.', '_').split('_')
+        arg0 = file_name[0]
+        arg1 = file_name[1]
+        arg2 = file_name[2]
+        year = file_name[3][0:4]
+        month = file_name[3][4:6]
+        day = file_name[3][6:]
+
+        return arg0, arg1, arg2, year, month, day
+
+    def parse_soilgrid_file(self, data_file):
+        file_name = data_file.replace('.', '_').split('_')
+        feature = file_name[0]
+        layer = file_name[1][0:4]
+        arg3 = file_name[2]
+        province = file_name[3]
+
+        return feature, layer, arg3, province
