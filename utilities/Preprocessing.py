@@ -582,9 +582,9 @@ class Preprocessing:
                     outDataRaster.FlushCache()
                     del outDataRaster
 
-    def merge(self, qa_masked_path, region_name, sat_id, tiles, year, day):
+    def merge(self, qa_masked_path, dir_region, region_name, sat_id, tiles, year, day):
         # Merges tiles for a specific sat_id/year/day
-        dir_sat = qa_masked_path + '/' + sat_id
+        dir_sat = dir_region + '/' + sat_id
         if not os.path.exists(dir_sat):
             os.mkdir(dir_sat)
             print("Directory ", dir_sat, " Created ")
