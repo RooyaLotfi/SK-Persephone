@@ -13,7 +13,7 @@ def merge(path, dir_path, region_name, sat_id, tiles, year, day):
     for root, dirs, files in sorted(os.walk(path)):
         files.sort(key=file_util.natural_keys)
         file_lists.append(files)
-
+    bands_dict = []
     if sat_id == "S30":
         bands_dict = {str(i): [] for i in range(1, 14)}
         data_type = "Float32"
