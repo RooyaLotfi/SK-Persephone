@@ -13,7 +13,11 @@ class FileUtils:
 
     def parse_tile_file(self, image):
         file_name = image.replace('.', ' ').replace('_', ' ').split()
-
+        sat_id = ""
+        tile = ""
+        year = ""
+        day = ""
+        band_no = ""
         if file_name[0] == 'HLS':
             sat_id = file_name[1]
             tile = file_name[2]
@@ -30,14 +34,12 @@ class FileUtils:
             day = file_name[1][5:]
             tile = file_name[2]
             band_no = file_name[5]
-
         elif file_name[0] == 'MCD15A3H':
             sat_id = file_name[0]
             year = file_name[1][1:5]
             day = file_name[1][5:]
             tile = file_name[2]
             band_no = file_name[5] + "_" + file_name[6]
-
         return sat_id, tile, year, day, band_no
 
     def parse_mask_file(self, image):
@@ -59,14 +61,22 @@ class FileUtils:
         return sat_id, tile, year, day, band_no
 
     def parse_preprocessed_file(self, image):
-        file_name = image.replace('.', '_').split('_')
-        sat_id = file_name[0]
-        tile = file_name[1]
-        year = file_name[2]
-        day = file_name[3]
-        band_no = file_name[4]
-        crop_type = file_name[5]
         # TODO: Fix your functions to keep crop_type in the its name
+        file_name = image.replace('.', '_').split('_')
+        if file_name[0] == 'MCD15A3H':
+            sat_id = file_name[0]
+            tile = file_name[1]
+            year = file_name[2]
+            day = file_name[3]
+            band_no = file_name[4] + "_" + file_name[5]
+            crop_type = ""
+        else:
+            sat_id = file_name[0]
+            tile = file_name[1]
+            year = file_name[2]
+            day = file_name[3]
+            band_no = file_name[4]
+            crop_type = file_name[5]
         return sat_id, tile, year, day, band_no, crop_type
 
     def parse_vi_file(self, text_file):
