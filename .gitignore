@@ -1,0 +1,43 @@
+# cache folders
+__pycache__/
+preprocessing/__pycache__/
+.DS_Store
+#.gitignore
+.idea/.gitignore
+.idea/SK-Persephone.iml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+#figures/
+
+
+# My local files
+#test*.py
+#RM_centroids/
+#centroid_*/
+#polygon_*/
+#MB_Tiles/
+#sk-mgrs-rm/
+#sk-mgrs-tiles/
+#Canada-Boundaries/
+#hls_tmp/
+#data/
+#12U*/
+*.tif
+*.hdf
+*.xml
+*.hdr
+#sample.*
+gpr_*
+Canada-Boundaries/
+figures/
+
+#yield-data/
+#aci_2019_sk_v1/
+test_crs_voronoi.py
+
+# virtualenv
+#venv/
+#ENV/
