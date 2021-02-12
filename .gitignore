@@ -15,13 +15,17 @@ preprocessing/__pycache__/
 
 # My local files
 #test*.py
-#RM_centroids/
-#centroid_*/
-#polygon_*/
-#MB_Tiles/
-#sk-mgrs-rm/
-#sk-mgrs-tiles/
-#Canada-Boundaries/
+AAFC_data/
+RM_centroids/
+centroid_*/
+polygon_*/
+MB_Tiles/
+sk-mgrs-rm/
+sk-mgrs-tiles/
+Canada-Boundaries/
+figugit res/
+gpr_*
+
 #hls_tmp/
 #data/
 #12U*/
@@ -30,9 +34,6 @@ preprocessing/__pycache__/
 *.xml
 *.hdr
 #sample.*
-gpr_*
-Canada-Boundaries/
-figures/
 
 #yield-data/
 #aci_2019_sk_v1/
