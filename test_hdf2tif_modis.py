@@ -74,8 +74,8 @@ def main():
     # modis_path_tif = os.path.join("data", "Modis_tif", "1_original", "2019")
     # hdf2tif(hdf_path=modis_path, tif_path=modis_path_tif, tiles=1, years=1, days=1)
 
-    modis_path = os.path.join("/Users/roya.lotfi/AIRM_Project/SK-Persephone/data/Modis_MCD43A4/1_Original/2019/")
-    modis_path_tif = os.path.join("/Users/roya.lotfi/AIRM_Project/SK-Persephone/data/Modis_MCD43A4/2_TifFormat")
+    modis_path = os.path.join("/data/Modis_MCD43A4/1_original/2019/")
+    modis_path_tif = os.path.join("/data/Modis_MCD43A4/2_tif")
     hdf2tif(hdf_path=modis_path, tif_path=modis_path_tif, tiles=1, years=1, days=1)
 
 
