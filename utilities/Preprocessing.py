@@ -51,12 +51,13 @@ class Preprocessing:
 
         for files in file_lists:
             for file in files:
-                if ".hdf" in file:
+                if ".hdf" in file and ".xml" not in file:
                     sat_id, tile, year, day, ext = file_util.parse_tile_file(file)
 
                     if tile in tiles and year in years and day in days:
                         path = f"{hdf_path}/{file}"
                         hdf_file = gdal.Open(path, gdal.GA_ReadOnly)
+                        print(hdf_file)
                         subdatasets = hdf_file.GetSubDatasets()
 
                         for i in range(0, len(subdatasets)):
@@ -586,7 +587,7 @@ class Preprocessing:
         # Merges tiles for a specific sat_id/year/day
         dir_sat = dir_region + '/' + sat_id
         if not os.path.exists(dir_sat):
-            os.mkdir(dir_sat)
+            os.makedirs(dir_sat)
             print("Directory ", dir_sat, " Created ")
 
         dir_year = dir_sat + '/' + year
