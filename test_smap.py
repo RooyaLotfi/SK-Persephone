@@ -40,69 +40,71 @@ def smap_mask(origin_path, destination_path, RM_IDs, crop_type_id, years, months
     rm_polygons_path = os.path.join("polygon_EPSG_32613/cropped_by_CA_boundaries/", "polygon.shp")
     rm_polygons = gpd.read_file(rm_polygons_path)
 
-    # Read AAFC data
-    crop_type_path = os.path.join("AAFC_data", "aci_2019_sk_v1", "masked_cropID__146_153.tif")
-    crop_type = rxr.open_rasterio(crop_type_path)
+    for year in years:
+        # Read AAFC data
+        crop_type_path = os.path.join("AAFC_data", "aci_"+year+"_sk_v1", "masked_cropID__146_153.tif")
 
-    for rm_id in RM_IDs:
-        # Pick a polygon
-        rm_polygon = rm_polygons.loc[rm_polygons['id'] == rm_id]
-        # Make a directory based on RM id and the crop type
-        output_raster_path = os.path.join(destination_path, str(rm_id), "crop_" + str(crop_type_id))
-        if not os.path.exists(output_raster_path):
-            os.makedirs(output_raster_path)
+        crop_type = rxr.open_rasterio(crop_type_path)
 
-        # Add buffer to existing polygon
-        rm_polygon_buff = rm_polygon.buffer(buffer)
+        for rm_id in RM_IDs:
+            # Pick a polygon
+            rm_polygon = rm_polygons.loc[rm_polygons['id'] == rm_id]
+            # Make a directory based on RM id and the crop type
+            output_raster_path = os.path.join(destination_path, year, str(rm_id), "crop_" + str(crop_type_id))
+            if not os.path.exists(output_raster_path):
+                os.makedirs(output_raster_path)
 
-        # Crop the crop mask by polygon
-        cropped_crop_type = crop(crop_type, rm_polygon)
-        # Save crop mask to a directory
-        crop_type_path = os.path.join("data", "SMAP", "3_crop", str(rm_id))
-        if not os.path.exists(crop_type_path):
-            os.makedirs(crop_type_path)
+            # Add buffer to existing polygon
+            rm_polygon_buff = rm_polygon.buffer(buffer)
 
-        crop_type_image = "crop_mask_" + str(rm_id) + '.tif'
+            # Crop the crop mask by polygon
+            cropped_crop_type = crop(crop_type, rm_polygon)
+            # Save crop mask to a directory
+            crop_type_path = os.path.join("data", "SMAP", "3_crop", str(rm_id))
+            if not os.path.exists(crop_type_path):
+                os.makedirs(crop_type_path)
 
-        cropped_crop_type.rio.to_raster(os.path.join(crop_type_path, crop_type_image))
-        print("Saved crop masks done!", os.path.join(crop_type_path, crop_type_image))
+            crop_type_image = "crop_mask_" + str(rm_id) + '.tif'
 
-        # Create mask based on crop type
-        crop_type_np = cropped_crop_type.data[0]
-        crop_type_np[crop_type_np != crop_type_id] = 0
-        crop_type_np[crop_type_np == crop_type_id] = 1
+            cropped_crop_type.rio.to_raster(os.path.join(crop_type_path, crop_type_image))
+            print("Saved crop masks done!", os.path.join(crop_type_path, crop_type_image))
 
-        for root, dirs, files in os.walk(origin_path):
-            for file in files:
-                print("does this file need to be processed ", file)
-                arg_0, feature, arg_2, year, month, day = f.parse_smap_file(file)
-                if year in years and int(month) in months and int(day) in days_num and feature in features:
-                    print("YES! processing file :", file)
-                    image_file_path = os.path.join(root, file)
-                    image_file = rxr.open_rasterio(image_file_path)
-                    # Change CRS
-                    image_file = image_file.rio.reproject(dst_crs=CRS)
-                    # Cropping with buffered polygon
-                    cropped_image_file_buff = crop(image_file, rm_polygon_buff)
-                    # Upsampling to 30m
-                    cropped_image_file_buff = cropped_image_file_buff.rio.reproject(dst_crs=CRS, resolution=resolution,
-                                                                                    resampling=Resampling.bilinear)
-                    # Cropping with normal polygons
-                    cropped_raster = crop(cropped_image_file_buff, rm_polygon)
+            # Create mask based on crop type
+            crop_type_np = cropped_crop_type.data[0]
+            crop_type_np[crop_type_np != crop_type_id] = 0
+            crop_type_np[crop_type_np == crop_type_id] = 1
 
-                    # A temp raster with size of crop_type
-                    temp_raster = copy(cropped_raster)
-                    # TODO: Check why the shapes do not match and try to fix it
-                    common_x_len = min(np.shape(temp_raster.data)[1], np.shape(cropped_crop_type.data)[1])
-                    common_y_len = min(np.shape(temp_raster.data)[2], np.shape(cropped_crop_type.data)[2])
+            for root, dirs, files in os.walk(origin_path):
+                for file in files:
+                    print("does this file need to be processed ", file)
+                    arg_0, feature, arg_2, year_smap, month, day = f.parse_smap_file(file)
+                    if year_smap == year and int(month) in months and int(day) in days_num and feature in features:
+                        print("YES! processing file :", file)
+                        image_file_path = os.path.join(root, file)
+                        image_file = rxr.open_rasterio(image_file_path)
+                        # Change CRS
+                        image_file = image_file.rio.reproject(dst_crs=CRS)
+                        # Cropping with buffered polygon
+                        cropped_image_file_buff = crop(image_file, rm_polygon_buff)
+                        # Upsampling to 30m
+                        cropped_image_file_buff = cropped_image_file_buff.rio.reproject(dst_crs=CRS, resolution=resolution,
+                                                                                        resampling=Resampling.bilinear)
+                        # Cropping with normal polygons
+                        cropped_raster = crop(cropped_image_file_buff, rm_polygon)
 
-                    for data in temp_raster.data:
-                        # data = data*crop_type_np
-                        data[0:common_x_len, 0:common_y_len] = data[0:common_x_len, 0:common_y_len] * \
-                                                               crop_type_np[0:common_x_len, 0:common_y_len]
-                    save_path = os.path.join(output_raster_path, file)
-                    temp_raster.rio.to_raster(save_path)
-                    print("Save Done! :", save_path)
+                        # A temp raster with size of crop_type
+                        temp_raster = copy(cropped_raster)
+                        # TODO: Check why the shapes do not match and try to fix it
+                        common_x_len = min(np.shape(temp_raster.data)[1], np.shape(cropped_crop_type.data)[1])
+                        common_y_len = min(np.shape(temp_raster.data)[2], np.shape(cropped_crop_type.data)[2])
+
+                        for data in temp_raster.data:
+                            # data = data*crop_type_np
+                            data[0:common_x_len, 0:common_y_len] = data[0:common_x_len, 0:common_y_len] * \
+                                                                   crop_type_np[0:common_x_len, 0:common_y_len]
+                        save_path = os.path.join(output_raster_path, file)
+                        temp_raster.rio.to_raster(save_path)
+                        print("Save Done! :", save_path)
 
 
 def get_key(year, month, day):
@@ -177,7 +179,7 @@ def smap_interpolate(origin_path, destination_path, RM_IDs, years, sat_ids, crop
 def main():
     print("*********************************** Implementing cropping to the "
           "extent of RM with buffer**********************************************")
-    YEAR = ['2015', '2019']
+    YEAR = ['2019']
     RM_IDs = [232, 322]
     resolution = 30
     CROP_TYPE_NO = 153
